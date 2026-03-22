@@ -85,7 +85,7 @@ func parseCodexSessionFile(path, filterCwd string) *core.AgentSessionInfo {
 	userMsgSeen := 0
 
 	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 256*1024), 256*1024)
+	scanner.Buffer(make([]byte, 256*1024), 10*1024*1024) // 10MB max token size
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -201,7 +201,7 @@ func getSessionHistory(sessionID string, limit int) ([]core.HistoryEntry, error)
 	var entries []core.HistoryEntry
 
 	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 256*1024), 256*1024)
+	scanner.Buffer(make([]byte, 256*1024), 10*1024*1024) // 10MB max token size
 
 	for scanner.Scan() {
 		line := scanner.Text()

@@ -327,6 +327,7 @@ const (
 	MsgAskQuestionMulti    MsgKey = "ask_question_multi"
 	MsgAskQuestionPrompt   MsgKey = "ask_question_prompt"
 	MsgAskQuestionAnswered MsgKey = "ask_question_answered"
+	MsgAskQuestionNotSupported MsgKey = "ask_question_not_supported"
 
 	MsgCommandsTitle        MsgKey = "commands_title"
 	MsgCommandsEmpty        MsgKey = "commands_empty"
@@ -2215,6 +2216,13 @@ var messages = map[MsgKey]map[Language]string{
 		LangTraditionalChinese: "已回答",
 		LangJapanese:           "回答済み",
 		LangSpanish:            "Respondido",
+	},
+	MsgAskQuestionNotSupported: {
+		LangEnglish:            "⚠️ This agent does not support interactive questions. Proceeding with default input.",
+		LangChinese:            "⚠️ 此 Agent 不支持交互式提问，将使用默认输入继续。",
+		LangTraditionalChinese: "⚠️ 此 Agent 不支援互動式提問，將使用預設輸入繼續。",
+		LangJapanese:           "⚠️ このエージェントは対話型質問をサポートしていません。デフォルト入力で続行します。",
+		LangSpanish:            "⚠️ Este agente no soporta preguntas interactivas. Continuando con la entrada predeterminada.",
 	},
 	MsgCommandsTitle: {
 		LangEnglish:            "🔧 **Custom Commands** (%d)\n\n",

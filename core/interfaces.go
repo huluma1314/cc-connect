@@ -367,3 +367,22 @@ type CommandRegistrar interface {
 type ChannelNameResolver interface {
 	ResolveChannelName(channelID string) (string, error)
 }
+
+// InteractivePermissionResponder is an optional interface for agents that support
+// interactive permission responses with updated input (e.g., AskUserQuestion with answers).
+// Agents implementing this can receive permission responses that include modified tool input
+// based on user answers to questions.
+type InteractivePermissionResponder interface {
+	// SupportsInteractivePermission returns true if the agent can handle permission responses
+	// that include updated input (e.g., from AskUserQuestion).
+	SupportsInteractivePermission() bool
+}
+
+// AskUserQuestionSupporter is an optional interface for agents that support
+// multi-turn AskUserQuestion interactions. Agents implementing this can ask
+// structured questions with options and receive answers before continuing.
+type AskUserQuestionSupporter interface {
+	// SupportsAskUserQuestion returns true if the agent supports AskUserQuestion-style
+	// multi-turn interactions.
+	SupportsAskUserQuestion() bool
+}

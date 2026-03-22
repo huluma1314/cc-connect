@@ -298,6 +298,15 @@ func (p *Platform) handleCallbackQuery(cb *tgbotapi.CallbackQuery) {
 		return
 	}
 
+	// Idempotency check: if buttons are already removed, this callback was already processed
+	if cb.Message.ReplyMarkup == nil || len(cb.Message.ReplyMarkup.InlineKeyboard) == 0 {
+		slog.Debug("telegram: callback already processed (no buttons)", "data", data, "msg_id", msgID)
+		// Still answer the callback to clear loading indicator
+		answer := tgbotapi.NewCallback(cb.ID, "")
+		_, _ = p.bot.Request(answer)
+		return
+	}
+
 	// Answer the callback to clear the loading indicator
 	answer := tgbotapi.NewCallback(cb.ID, "")
 	if _, err := p.bot.Request(answer); err != nil {
@@ -693,6 +702,7 @@ func (p *Platform) SendPreviewStart(ctx context.Context, rctx any, content strin
 }
 
 // UpdateMessage edits an existing message identified by previewHandle.
+// If editing fails, returns an error so the caller can fall back to sending a new message.
 func (p *Platform) UpdateMessage(ctx context.Context, previewHandle any, content string) error {
 	h, ok := previewHandle.(*telegramPreviewHandle)
 	if !ok {
@@ -722,10 +732,14 @@ func (p *Platform) UpdateMessage(ctx context.Context, previewHandle any, content
 				if strings.Contains(err2.Error(), "not modified") {
 					return nil
 				}
+				slog.Warn("telegram: edit message failed after fallback", "error", err2)
 				return fmt.Errorf("telegram: edit message: %w", err2)
 			}
 			return nil
 		}
+		// For other errors (message deleted, chat not found, etc.), return error
+		// so caller can fall back to sending a new message
+		slog.Warn("telegram: edit message failed, caller should fallback", "error", err)
 		return fmt.Errorf("telegram: edit message: %w", err)
 	}
 	slog.Debug("telegram: UpdateMessage HTML success")

@@ -1993,6 +1993,44 @@ func (e *Engine) processInteractiveEvents(state *interactiveState, session *Sess
 			autoApprove := state.approveAll
 			state.mu.Unlock()
 
+			// Check if agent supports interactive permissions
+			supportsInteractive := true
+			if aq, ok := state.agentSession.(InteractivePermissionResponder); ok {
+				supportsInteractive = aq.SupportsInteractivePermission()
+			}
+			// Check if agent supports AskUserQuestion
+			supportsAskQ := true
+			if aq, ok := state.agentSession.(AskUserQuestionSupporter); ok {
+				supportsAskQ = aq.SupportsAskUserQuestion()
+			}
+
+			// Handle AskUserQuestion for agents that don't support it
+			if isAskQuestion && !supportsAskQ {
+				slog.Warn("agent does not support AskUserQuestion, sending fallback response",
+					"request_id", event.RequestID, "tool", event.ToolName)
+				// Send a clear message that this agent doesn't support interactive questions
+				fallbackMsg := e.i18n.T(MsgAskQuestionNotSupported)
+				e.send(p, replyCtx, fallbackMsg)
+				// Respond with allow to continue (agent will proceed with default input)
+				_ = state.agentSession.RespondPermission(event.RequestID, PermissionResult{
+					Behavior:     "allow",
+					UpdatedInput: event.ToolInputRaw,
+				})
+				continue
+			}
+
+			// For non-interactive agents, skip permission prompts entirely
+			// They rely on CLI permission mode set at startup
+			if !isAskQuestion && !supportsInteractive {
+				slog.Info("agent does not support interactive permissions, auto-allowing",
+					"request_id", event.RequestID, "tool", event.ToolName)
+				_ = state.agentSession.RespondPermission(event.RequestID, PermissionResult{
+					Behavior:     "allow",
+					UpdatedInput: event.ToolInputRaw,
+				})
+				continue
+			}
+
 			if autoApprove && !isAskQuestion {
 				slog.Debug("auto-approving (approve-all)", "request_id", event.RequestID, "tool", event.ToolName)
 				_ = state.agentSession.RespondPermission(event.RequestID, PermissionResult{

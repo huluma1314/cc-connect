@@ -496,6 +496,18 @@ func (cs *codexSession) RespondPermission(_ string, _ core.PermissionResult) err
 	return nil
 }
 
+// SupportsInteractivePermission returns false because Codex CLI does not support
+// interactive permission responses with updated input.
+func (cs *codexSession) SupportsInteractivePermission() bool {
+	return false
+}
+
+// SupportsAskUserQuestion returns false because Codex CLI does not support
+// AskUserQuestion-style multi-turn interactions via control_response.
+func (cs *codexSession) SupportsAskUserQuestion() bool {
+	return false
+}
+
 func (cs *codexSession) Events() <-chan core.Event {
 	return cs.events
 }

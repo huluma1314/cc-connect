@@ -459,6 +459,18 @@ func (cs *claudeSession) RespondPermission(requestID string, result core.Permiss
 	return cs.writeJSON(controlResponse)
 }
 
+// SupportsInteractivePermission returns true because Claude Code supports
+// interactive permission responses with updated input (e.g., from AskUserQuestion).
+func (cs *claudeSession) SupportsInteractivePermission() bool {
+	return true
+}
+
+// SupportsAskUserQuestion returns true because Claude Code supports
+// AskUserQuestion-style multi-turn interactions.
+func (cs *claudeSession) SupportsAskUserQuestion() bool {
+	return true
+}
+
 func (cs *claudeSession) writeJSON(v any) error {
 	cs.stdinMu.Lock()
 	defer cs.stdinMu.Unlock()
